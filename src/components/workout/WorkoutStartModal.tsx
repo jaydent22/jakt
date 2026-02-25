@@ -4,18 +4,17 @@ import { useEffect, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 import Modal from "../Modal";
 import type {
-  ProgramWithDays,
   ProgramDayWithExercises,
+  ProgramWithDays,
 } from "../programs/ProgramList";
+import { createOrUpdateWorkoutDraft } from "../../lib/actions/workout";
 
-const StartWorkoutModal = ({
+const WorkoutStartModal = ({
   isOpen,
   onClose,
-  onSelectProgram,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSelectProgram: (program: ProgramWithDays) => void;
 }) => {
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState<ProgramWithDays[]>([]);
@@ -94,7 +93,7 @@ const StartWorkoutModal = ({
             </h3>
             <button
               onClick={getPrograms}
-              className="px-4 py-2 bg-accent text-foreground rounded-full hover:bg-accent-hover active:bg-accent-active"
+              className="px-4 py-2 bg-accent text-white rounded-full hover:bg-accent-hover active:bg-accent-active"
             >
               Select
             </button>
@@ -105,7 +104,7 @@ const StartWorkoutModal = ({
             <p className="mb-6">This feature is coming soon. Stay tuned!</p>
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-accent text-foreground rounded-full hover:bg-accent-hover active:bg-accent-active"
+              className="px-4 py-2 bg-accent text-white rounded-full hover:bg-accent-hover active:bg-accent-active"
             >
               Select
             </button>
@@ -162,7 +161,7 @@ const StartWorkoutModal = ({
                       <button
                         role="button"
                         onClick={() => getProgramDays(program.id)}
-                        className="mt-2 md:mt-4 inline-block px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover active:bg-accent-active"
+                        className="mt-2 inline-block px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover active:bg-accent-active"
                       >
                         Select Program
                       </button>
@@ -184,31 +183,37 @@ const StartWorkoutModal = ({
             </button>
           </div>
 
-          <h2 className="text-2xl font-bold pb-2 border-b border-border mb-4">Program Days</h2>
+          <h2 className="text-2xl font-bold pb-2 border-b border-border mb-4">
+            Program Days
+          </h2>
           {loading ? (
             <p>Loading...</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {programDays.map((day) => (
-                <div
-                  key={day.id}
-                  className="border border-border rounded-lg p-4 w-full max-w-sm"
-                >
-                  <h3 className="text-xl font-semibold mb-2">
-                    {day.name} {day.day_type === "exercise" ? "💪" : "💤"}
-                  </h3>
-                  {day.day_type === "exercise" && (
-                    <div className="flex flex-col gap-2 max-h-28 md:max-h-40 overflow-y-scroll">
-                      {day.program_day_exercises.map((exercise) => (
-                        <div key={exercise.id} className="my-1">
-                          <h4 className="text-lg font-medium">
-                            - {exercise.exercises.name}
-                          </h4>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <form action={createOrUpdateWorkoutDraft} key={day.id}>
+                  <input type="hidden" name="dayId" value={day.id} />
+                  <button
+                    key={day.id}
+                    type="submit"
+                    className="border border-border rounded-lg p-4 w-full max-w-sm bg-surface hover:bg-surface-hover active:bg-surface-active hover:shadow-lg hover:cursor-pointer transition-all duration-200 ease-in-out hover:-translate-y-1 text-left flex flex-col items-start gap-2 max-h-48 overflow-hidden"
+                  >
+                    <h3 className="text-xl font-semibold mb-2">
+                      {day.name} {day.day_type === "exercise" ? "💪" : "💤"}
+                    </h3>
+                    {day.day_type === "exercise" && (
+                      <div className="flex flex-col gap-2 max-h-28 md:max-h-40 overflow-y-scroll">
+                        {day.program_day_exercises.map((exercise) => (
+                          <div key={exercise.id} className="my-1">
+                            <h4 className="text-lg font-medium">
+                              - {exercise.exercises.name}
+                            </h4>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </button>
+                </form>
               ))}
             </div>
           )}
@@ -218,4 +223,4 @@ const StartWorkoutModal = ({
   );
 };
 
-export default StartWorkoutModal;
+export default WorkoutStartModal;

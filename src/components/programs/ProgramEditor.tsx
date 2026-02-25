@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState, useActionState, useMemo, useEffect } from "react";
+import { Fragment, useState, useActionState, useMemo } from "react";
 import FloatingInput from "../FloatingInput";
 import ExerciseDayCard from "../exercises/ExerciseDayCard";
 import RestDayCard from "../exercises/RestDayCard";
