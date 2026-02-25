@@ -296,8 +296,19 @@ async function updateDays(
     }
   }
 
-  // reconstruct upsertedDays
-  const allDays = [...insertedDays, ...updatedDays];
+  // refetch all days
+  const { data: allDays, error: fetchError } = await supabase
+    .from("program_days")
+    .select("id, day_number")
+    .eq("program_id", programId);
+
+  if (fetchError) {
+    return {
+      success: false,
+      error:
+        fetchError.message || "An error occurred while fetching program days.",
+    };
+  }
   const dayNumberToIdMap = new Map<number, string>(
     allDays.map((day) => [day.day_number, day.id])
   );
@@ -309,6 +320,15 @@ async function updateExercises(
   programDays: z.infer<typeof ProgramSchema>["days"],
   dayNumberToIdMap: Map<number, string>
 ): Promise<{ success: boolean; error?: string }> {
+  // fetch exercises pre-mutation to compare and determine which ones to delete
+  const allDayIds = Array.from(dayNumberToIdMap.values());
+  const { data: existingExercises } = await supabase
+    .from("program_day_exercises")
+    .select("id, program_day_id")
+    .in("program_day_id", allDayIds);
+
+  const existingExerciseIds = existingExercises?.map((ex) => ex.id) || [];
+  
   const exercisesToUpsert = programDays
     .filter(
       (day): day is ExerciseDay => day.dayType === DayTypeEnum.enum.exercise
@@ -333,10 +353,13 @@ async function updateExercises(
   const exercisesToInsert = exercisesToUpsert.filter((ex) => !ex.id);
   const exercisesToUpdate = exercisesToUpsert.filter((ex) => ex.id);
 
+  console.log("Exercises to insert:", exercisesToInsert);
+
   if (exercisesToInsert.length > 0) {
     const { error: insertError } = await supabase
       .from("program_day_exercises")
       .insert(exercisesToInsert);
+    console.log("Error inserting exercises:", insertError?.message);
     if (insertError) {
       return {
         success: false,
@@ -362,15 +385,15 @@ async function updateExercises(
   }
 
   // Delete removed exercises
-  const allDayIds = Array.from(dayNumberToIdMap.values());
-  const { data: existingExercises } = await supabase
-    .from("program_day_exercises")
-    .select("id, program_day_id")
-    .in("program_day_id", allDayIds);
-
-  const existingExerciseIds = existingExercises?.map((ex) => ex.id) || [];
   const incomingExerciseIds = new Set(
-    exercisesToUpsert.filter((ex) => ex.id).map((ex) => ex.id!)
+    programDays
+      .filter(
+        (day): day is ExerciseDay =>
+          day.dayType === DayTypeEnum.enum.exercise
+      )
+      .flatMap((day) => day.exercises)
+      .filter((ex) => ex.id)
+      .map((ex) => ex.id!)
   );
   const exerciseIdsToDelete = existingExerciseIds.filter(
     (id) => !incomingExerciseIds.has(id)
