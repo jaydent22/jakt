@@ -7,7 +7,7 @@ import type {
   ProgramDayWithExercises,
   ProgramWithDays,
 } from "../programs/ProgramList";
-import { createOrUpdateWorkoutDraft } from "../../lib/actions/workout";
+import { saveWorkoutDraft } from "../../lib/actions/workout";
 
 const WorkoutStartModal = ({
   isOpen,
@@ -191,7 +191,7 @@ const WorkoutStartModal = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {programDays.map((day) => (
-                <form action={createOrUpdateWorkoutDraft} key={day.id}>
+                <form action={saveWorkoutDraft} key={day.id}>
                   <input type="hidden" name="dayId" value={day.id} />
                   <button
                     key={day.id}

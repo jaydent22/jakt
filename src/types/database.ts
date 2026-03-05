@@ -179,6 +179,7 @@ export type Database = {
           sort_order: number
           target_reps: number
           target_sets: number
+          target_weight_kg: number | null
         }
         Insert: {
           exercise_id: string
@@ -187,6 +188,7 @@ export type Database = {
           sort_order: number
           target_reps: number
           target_sets: number
+          target_weight_kg?: number | null
         }
         Update: {
           exercise_id?: string
@@ -195,6 +197,7 @@ export type Database = {
           sort_order?: number
           target_reps?: number
           target_sets?: number
+          target_weight_kg?: number | null
         }
         Relationships: [
           {
@@ -387,23 +390,29 @@ export type Database = {
       }
       workout_sets: {
         Row: {
+          actual_reps: number | null
           id: string
-          reps: number | null
           set_number: number
+          target_reps: number | null
+          target_weight_kg: number | null
           weight_kg: number | null
           workout_exercise_id: string | null
         }
         Insert: {
+          actual_reps?: number | null
           id?: string
-          reps?: number | null
           set_number: number
+          target_reps?: number | null
+          target_weight_kg?: number | null
           weight_kg?: number | null
           workout_exercise_id?: string | null
         }
         Update: {
+          actual_reps?: number | null
           id?: string
-          reps?: number | null
           set_number?: number
+          target_reps?: number | null
+          target_weight_kg?: number | null
           weight_kg?: number | null
           workout_exercise_id?: string | null
         }
