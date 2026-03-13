@@ -45,7 +45,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     defaultValues: sessionToForm(session),
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [exerciseAction, setExerciseAction] = useState<{
     type: "insert" | "replace";
     exerciseIdx: number;
@@ -69,15 +69,14 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     if (!exerciseAction) return;
 
     const exists = exerciseFields.some(
-        (ex, idx) =>
-          ex.exerciseId === exercise.id &&
-          idx !== exerciseAction.exerciseIdx
-      );
-    
-      if (exists) {
-        alert("This exercise is already in the workout");
-        return;
-      }
+      (ex, idx) =>
+        ex.exerciseId === exercise.id && idx !== exerciseAction.exerciseIdx
+    );
+
+    if (exists) {
+      alert("This exercise is already in the workout");
+      return;
+    }
 
     if (exerciseAction.type === "insert") {
       insertExercise(exerciseAction.exerciseIdx, {
@@ -101,7 +100,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
       });
     }
 
-    setIsModalOpen(false);
+    setIsSearchModalOpen(false);
     setExerciseAction(null);
   }
 
@@ -126,8 +125,13 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     >
       <div className="w-full max-w-lg border-b border-border pb-2 mb-4">
         <h1 className="text-center text-2xl font-bold text-foreground">
-          {session.name}
+          {session.name ?? `Workout Session - ${new Date().toDateString()}`}
         </h1>
+        <textarea
+          {...register("notes")}
+          placeholder="Session notes..."
+          className="w-full mt-2 p-2 rounded-lg border border-border/50 bg-surface/50 text-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
+        />
       </div>
 
       <div className="flex-1 min-h-0 w-full max-w-lg space-y-2 text-center overflow-y-auto">
@@ -138,7 +142,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                 type="button"
                 onClick={() => {
                   setExerciseAction({ type: "insert", exerciseIdx });
-                  setIsModalOpen(true);
+                  setIsSearchModalOpen(true);
                 }}
               >
                 + Add Exercise
@@ -160,7 +164,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
               type: "insert",
               exerciseIdx: exerciseFields.length,
             });
-            setIsModalOpen(true);
+            setIsSearchModalOpen(true);
           }}
         >
           + Add Exercise
@@ -168,7 +172,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
       </div>
       {/* <div className="sticky bottom-0 z-10 w-full max-w-lg pt-6 pb-4 text-center bg-gradient-to-t from-background to-transparent backdrop-blur-lg rounded-full"> */}
       <div className="sticky bottom-0 z-10 w-full py-2 mt-2 bg-background/10 backdrop-blur-xl border-t border-border/20 rounded-full shadow-md">
-        <div className="flex items-center justify-between max-w-lg mx-auto px-4 space-x-2">
+        <div className="flex items-stretch justify-between max-w-lg mx-auto px-4 space-x-2">
           <button
             type="button"
             // className="px-4 py-2 text-sm rounded-full bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
@@ -181,7 +185,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="size-6"
+                className="size-5"
               >
                 <path
                   strokeLinecap="round"
@@ -189,13 +193,13 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                   d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
                 />
               </svg>
-              <span className="text-xs">Back</span>
+              <span className="text-xs">Change Day</span>
             </div>
           </button>
 
           <button
             type="submit"
-            className="px-4 py-2 w-full bg-accent text-white rounded-full hover:bg-accent-hover active:bg-accent-active"
+            className="flex items-center justify-center text-xl font-semibold px-4 py-2 w-full bg-accent text-white rounded-full hover:bg-accent-hover active:bg-accent-active"
           >
             Start Workout
           </button>
@@ -220,7 +224,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                   d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                 />
               </svg>
-              <span className="text-xs">Clear</span>
+              <span className="text-xs">Clear Session</span>
             </div>
           </button>
         </div>
@@ -267,9 +271,9 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
         </div>
       </div> */}
       <ExerciseSearchModal
-        isOpen={isModalOpen}
+        isOpen={isSearchModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
+          setIsSearchModalOpen(false);
           setExerciseAction(null);
         }}
         onSelectExercise={handleSelectExercise}
