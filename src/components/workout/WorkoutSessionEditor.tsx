@@ -68,6 +68,17 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
   function handleSelectExercise(exercise: ExerciseSearchResult) {
     if (!exerciseAction) return;
 
+    const exists = exerciseFields.some(
+        (ex, idx) =>
+          ex.exerciseId === exercise.id &&
+          idx !== exerciseAction.exerciseIdx
+      );
+    
+      if (exists) {
+        alert("This exercise is already in the workout");
+        return;
+      }
+
     if (exerciseAction.type === "insert") {
       insertExercise(exerciseAction.exerciseIdx, {
         exerciseId: exercise.id ?? "",
@@ -262,6 +273,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
           setExerciseAction(null);
         }}
         onSelectExercise={handleSelectExercise}
+        existingExerciseIds={exerciseFields.map((ex) => ex.exerciseId)}
       />
     </form>
   );

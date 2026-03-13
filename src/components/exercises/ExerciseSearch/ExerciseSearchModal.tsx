@@ -7,21 +7,36 @@ const ExerciseSearchModal = ({
   isOpen,
   onClose,
   onSelectExercise,
+  existingExerciseIds,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSelectExercise: (exercise: ExerciseSearchResult) => void;
+  existingExerciseIds: string[];
 }) => {
   const [selectedExercise, setSelectedExercise] =
     useState<ExerciseSearchResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  function verifyExercise(exercise: ExerciseSearchResult): boolean {
+    if (existingExerciseIds.includes(exercise.id!)) {
+      setError(`${exercise.name} is already in the session`);
+      return false;
+    }
+    setError(null);
+    return true;
+  }
+
+  function handleClose() {
+    setSelectedExercise(null);
+    setError(null);
+    onClose();
+  }
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {
-        setSelectedExercise(null);
-        onClose();
-      }}
+      onClose={handleClose}
       scrollable
     >
       {selectedExercise && (
@@ -35,16 +50,29 @@ const ExerciseSearchModal = ({
       )}
       <div className="flex-1 min-h-0 overflow-y-auto mt-4">
         <ExerciseSearch
-          onSelectExercise={(exercise) => setSelectedExercise(exercise)}
+          onSelectExercise={(exercise) => {
+            if (verifyExercise(exercise)) {
+              setSelectedExercise(exercise);
+            }
+          }}
           muscleGroups={[]}
           equipment={[]}
         />
       </div>
+      {error && (
+        <div className="mb-4 p-3 text-sm border border-red-700 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
       <div className="sticky bottom-0 bg-background pt-3 mt-4 w-full border-t border-border">
         <button
           type="button"
-          className="w-full px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover active:bg-accent-active"
-          onClick={() => onSelectExercise(selectedExercise!)}
+          disabled={!selectedExercise}
+          className="w-full px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover active:bg-accent-active disabled:bg-accent/50 disabled:hover:bg-accent/50 disabled:active:bg-accent/50 disabled:cursor-not-allowed"
+          onClick={() => {
+            onSelectExercise(selectedExercise!);
+            handleClose();
+          }}
         >
           Select
         </button>
