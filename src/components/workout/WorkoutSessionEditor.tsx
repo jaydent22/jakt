@@ -156,23 +156,105 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
         </button>
       </div>
       {/* <div className="sticky bottom-0 z-10 w-full max-w-lg pt-6 pb-4 text-center bg-gradient-to-t from-background to-transparent backdrop-blur-lg rounded-full"> */}
-      <div className="sticky bottom-0 z-10 w-full py-2 mt-2 bg-background/10 backdrop-blur-xl border-t border-border rounded-full">
-        <div className="flex items-center justify-between max-w-lg mx-auto px-4">
+      <div className="sticky bottom-0 z-10 w-full py-2 mt-2 bg-background/10 backdrop-blur-xl border-t border-border/20 rounded-full shadow-md">
+        <div className="flex items-center justify-between max-w-lg mx-auto px-4 space-x-2">
           <button
             type="button"
-            className="px-3 py-2 rounded-full text-foreground-muted active:text-foreground active:bg-surface-active"
+            // className="px-4 py-2 text-sm rounded-full bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
+            className="px-2 py-2 text-sm rounded-full text-foreground-muted active:text-foreground active:bg-surface-active"
+          >
+            <div className="flex flex-col items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                />
+              </svg>
+              <span className="text-xs">Back</span>
+            </div>
+          </button>
+
+          <button
+            type="submit"
+            className="px-4 py-2 w-full bg-accent text-white rounded-full hover:bg-accent-hover active:bg-accent-active"
+          >
+            Start Workout
+          </button>
+
+          <button
+            type="button"
+            // className="px-4 py-2 text-sm rounded-full bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
+            className="px-2 py-2 text-sm rounded-full text-foreground-muted active:text-foreground active:bg-surface-active"
+          >
+            <div className="flex flex-col items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+              <span className="text-xs">Clear</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* <div className="sticky bottom-0 z-10 w-full py-2 mt-4">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            className="px-4 py-2 text-sm rounded-lg bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
           >
             ← Back
           </button>
 
           <button
             type="submit"
-            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover active:bg-accent-active"
+            className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover active:bg-accent-active"
           >
             Start Workout
           </button>
+
+          <button
+            type="button"
+            className="px-4 py-2 text-sm rounded-lg bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
+          >
+            <div className="flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+              <p>Reset</p>
+            </div>
+          </button>
         </div>
-      </div>
+      </div> */}
       <ExerciseSearchModal
         isOpen={isModalOpen}
         onClose={() => {

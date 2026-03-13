@@ -24,7 +24,7 @@ const WorkoutExerciseCard = ({
   });
   return (
     <div key={exercise.id} className="p-4 border border-border rounded">
-      <div className="flex items-center justify-between border-b pb-2">
+      <div className="flex items-center justify-between border-b border-border pb-2">
         <h2 className="text-lg font-semibold">{exercise.exerciseName}</h2>
         <button
           type="button"
