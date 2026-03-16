@@ -33,12 +33,25 @@ export default async function WorkoutSessionPage({
     .eq("user_id", user?.id)
     .single();
 
-  session["name"] = await supabase
-    .from("program_days")
-    .select("name")
-    .eq("id", session.program_day_id)
-    .single()
-    .then((res) => res.data?.name);
+  let name: string | null = null;
+
+  if (session?.program_day_id) {
+    const { data } = await supabase
+      .from("program_days")
+      .select("name")
+      .eq("id", session.program_day_id)
+      .single();
+    name = data?.name || null;
+  }
+
+  session["name"] = name;
+
+  // session["name"] = await supabase
+  //   .from("program_days")
+  //   .select("name")
+  //   .eq("id", session.program_day_id)
+  //   .single()
+  //   .then((res) => res.data?.name);
 
   if (session.status === "draft") {
     return <WorkoutSessionEditor session={session} />;
