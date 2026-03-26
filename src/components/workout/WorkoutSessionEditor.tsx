@@ -63,6 +63,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     type: "insert" | "replace";
     exerciseIdx: number;
   } | null>(null);
+  const [expandedExerciseIdx, setExpandedExerciseIdx] = useState<number | null>(null);
 
   const {
     fields: exerciseFields,
@@ -185,6 +186,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
 
       <div className="flex-1 w-full max-w-lg space-y-2 text-center overflow-y-auto">
         {exerciseFields.map((exercise, exerciseIdx) => {
+          const isExpanded = expandedExerciseIdx === exerciseIdx;
           return (
             <Fragment key={exercise.id}>
               <button
@@ -202,6 +204,9 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                 control={control}
                 register={register}
                 removeExercise={() => removeExercise(exerciseIdx)}
+                // setExpandedExerciseIdx={(idx) => setExpandedExerciseIdx((current) => (current === idx ? null : idx))}
+                setExpandedExerciseIdx={(idx) => setExpandedExerciseIdx(idx)}
+                isExpanded={isExpanded}
               />
             </Fragment>
           );

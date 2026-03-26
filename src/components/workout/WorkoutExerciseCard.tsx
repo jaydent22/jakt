@@ -7,12 +7,16 @@ const WorkoutExerciseCard = ({
   control,
   register,
   removeExercise,
+  setExpandedExerciseIdx,
+  isExpanded,
 }: {
   exercise: SessionForm["exercises"][number];
   exerciseIdx: number;
   control: Control<SessionForm>;
   register: UseFormRegister<SessionForm>;
   removeExercise: (index: number) => void;
+  setExpandedExerciseIdx: (index: number | null) => void;
+  isExpanded: boolean;
 }) => {
   const {
     fields: sets,
@@ -23,8 +27,18 @@ const WorkoutExerciseCard = ({
     name: `exercises.${exerciseIdx}.sets`,
   });
   return (
-    <div key={exercise.id} className="p-4 border border-border rounded">
-      <div className="flex items-center justify-between border-b border-border pb-2">
+    <div
+      key={exercise.id}
+      className={`p-4 rounded cursor-pointer border ${
+        isExpanded ? "border-white" : "border-border"
+      }`} // hover:border-white transition-colors duration-200 ease-in-out`}
+    >
+      <div
+        onClick={() => setExpandedExerciseIdx(exerciseIdx)}
+        className={`flex items-center justify-between ${
+          isExpanded ? "pb-2 border-b border-border " : ""
+        }`}
+      >
         <h2 className="text-lg font-semibold">{exercise.exerciseName}</h2>
         <button
           type="button"
@@ -47,32 +61,45 @@ const WorkoutExerciseCard = ({
           </svg>
         </button>
       </div>
-      {exercise.sets && (
+      {isExpanded && exercise.sets && (
         <div className="mt-2 text-left">
+          {/* Header */}
+          <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-2 mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+            <span>Set</span>
+            <span className="text-center">Reps</span>
+            <span className="text-center">Kg</span>
+            <span /> {/* for trash column */}
+          </div>
+
           {sets.map((set, setIdx) => (
             <div
               key={set.id}
-              className="flex items-center gap-2 mt-1 text-foreground"
+              className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-2 mt-1 text-foreground"
             >
-              <p>Set {setIdx + 1}:</p>
+              {/* Set number */}
+              <p className="w-6 text-right tabular-nums text-sm text-muted-foreground">
+                {setIdx + 1}
+              </p>
+
+              {/* Reps */}
               <input
                 type="number"
                 {...register(
                   `exercises.${exerciseIdx}.sets.${setIdx}.targetReps`,
                   { valueAsNumber: true }
                 )}
-                className="w-16 px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
+                className="w-full px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
               />
-              <p>reps at </p>
+
+              {/* Weight */}
               <input
                 type="number"
                 {...register(
                   `exercises.${exerciseIdx}.sets.${setIdx}.targetWeightKg`,
                   { valueAsNumber: true }
                 )}
-                className="w-16 px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
+                className="w-full px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
               />
-              <p>kg</p>
               <button
                 type="button"
                 onClick={() => removeSet(setIdx)}
