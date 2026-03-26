@@ -336,6 +336,7 @@ export type Database = {
       workout_sessions: {
         Row: {
           completed_at: string | null
+          created_at: string
           id: string
           notes: string | null
           program_day_id: string | null
@@ -346,6 +347,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          created_at?: string
           id?: string
           notes?: string | null
           program_day_id?: string | null
@@ -356,6 +358,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          created_at?: string
           id?: string
           notes?: string | null
           program_day_id?: string | null

@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
-import WorkoutStartModal from "./WorkoutStartModal";
+
+import { saveWorkoutDraft } from "../../lib/actions/workout";
+
+import WorkoutSelectorModal from "./WorkoutSelectorModal";
 
 const WorkoutClient = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,9 +29,12 @@ const WorkoutClient = () => {
           Start Workout
         </button>
 
-        <WorkoutStartModal
+        <WorkoutSelectorModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
+          onSelect={async ({ programId, dayId }) => {
+            saveWorkoutDraft({ programId, dayId });
+          }}
         />
       </div>
     </div>

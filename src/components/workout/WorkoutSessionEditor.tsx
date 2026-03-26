@@ -1,14 +1,17 @@
 "use client";
 
-import { Fragment, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { Fragment, useEffect, useState } from "react";
+import { useForm, useFieldArray, set } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { clearSession, saveWorkoutDraft } from "../../lib/actions/workout";
 
 import { Tables } from "../../types/database";
 import { SessionForm, SessionFormSchema } from "../../types/schemas/workout";
 import { ExerciseSearchResult } from "../exercises/ExerciseSearch/ExerciseSearch";
 import ExerciseSearchModal from "../exercises/ExerciseSearch/ExerciseSearchModal";
 import WorkoutExerciseCard from "./WorkoutExerciseCard";
+import WorkoutSelectorModal from "./WorkoutSelectorModal";
 
 export type Session = Tables<"workout_sessions"> & {
   workout_exercises: (Tables<"workout_exercises"> & {
@@ -40,12 +43,22 @@ function sessionToForm(session: Session): SessionForm {
 }
 
 const WorkoutSessionEditor = ({ session }: { session: Session }) => {
-  const { register, control, handleSubmit } = useForm<SessionForm>({
+  const { register, control, handleSubmit, reset } = useForm<SessionForm>({
     resolver: zodResolver(SessionFormSchema),
     defaultValues: sessionToForm(session),
   });
 
+  // reset form values whenever the session prop changes (e.g. when loading a different session)
+  useEffect(() => {
+    if (session) {
+      reset(sessionToForm(session));
+      setLoading(false);
+    }
+  }, [session, reset]);
+
+  const [loading, setLoading] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isDaySelectorOpen, setIsDaySelectorOpen] = useState(false);
   const [exerciseAction, setExerciseAction] = useState<{
     type: "insert" | "replace";
     exerciseIdx: number;
@@ -104,6 +117,42 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     setExerciseAction(null);
   }
 
+  function handleClearSession() {
+    if (
+      confirm(
+        "Are you sure you want to clear the session? This cannot be undone."
+      )
+    ) {
+      setLoading(true);
+      clearSession(session.id);
+    }
+  }
+
+  async function handleSelectProgramDay({
+    programId,
+    dayId,
+  }: {
+    programId: string;
+    dayId: string;
+  }) {
+    if (
+      !confirm(
+        "Changing the program day will reset all exercises and sets in the session. Are you sure?"
+      )
+    ) {
+      return;
+    }
+    setIsDaySelectorOpen(false);
+
+    setLoading(true);
+
+    await saveWorkoutDraft({
+      programId,
+      dayId,
+      existingSessionId: session.id,
+    });
+  }
+
   if (!session) {
     return (
       <div className="flex flex-col items-center">
@@ -121,7 +170,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col items-center h-full"
+      className="flex flex-col items-center h-full min-h-screen"
     >
       <div className="w-full max-w-lg border-b border-border pb-2 mb-4">
         <h1 className="text-center text-2xl font-bold text-foreground">
@@ -134,7 +183,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
         />
       </div>
 
-      <div className="flex-1 min-h-0 w-full max-w-lg space-y-2 text-center overflow-y-auto">
+      <div className="flex-1 w-full max-w-lg space-y-2 text-center overflow-y-auto">
         {exerciseFields.map((exercise, exerciseIdx) => {
           return (
             <Fragment key={exercise.id}>
@@ -170,11 +219,14 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
           + Add Exercise
         </button>
       </div>
+
       {/* <div className="sticky bottom-0 z-10 w-full max-w-lg pt-6 pb-4 text-center bg-gradient-to-t from-background to-transparent backdrop-blur-lg rounded-full"> */}
       <div className="sticky bottom-0 z-10 w-full py-2 mt-2 bg-background/10 backdrop-blur-xl border-t border-border/20 rounded-full shadow-md">
         <div className="flex items-stretch justify-between max-w-lg mx-auto px-4 space-x-2">
           <button
             type="button"
+            disabled={loading}
+            onClick={() => setIsDaySelectorOpen(true)}
             // className="px-4 py-2 text-sm rounded-full bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
             className="px-2 py-2 text-sm rounded-full text-foreground-muted active:text-foreground active:bg-surface-active"
           >
@@ -199,6 +251,7 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
 
           <button
             type="submit"
+            disabled={loading}
             className="flex items-center justify-center text-xl font-semibold px-4 py-2 w-full bg-accent text-white rounded-full hover:bg-accent-hover active:bg-accent-active"
           >
             Start Workout
@@ -206,6 +259,8 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
 
           <button
             type="button"
+            disabled={loading}
+            onClick={handleClearSession}
             // className="px-4 py-2 text-sm rounded-full bg-surface/60 backdrop-blur-lg border border-border/20 text-foreground-muted hover:bg-surface/20 active:bg-surface-active"
             className="px-2 py-2 text-sm rounded-full text-foreground-muted active:text-foreground active:bg-surface-active"
           >
@@ -279,6 +334,23 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
         onSelectExercise={handleSelectExercise}
         existingExerciseIds={exerciseFields.map((ex) => ex.exerciseId)}
       />
+      <WorkoutSelectorModal
+        isOpen={isDaySelectorOpen}
+        onClose={() => setIsDaySelectorOpen(false)}
+        onSelect={async ({ programId, dayId }) =>
+          handleSelectProgramDay({ programId, dayId })
+        }
+        initialStep="selectDay"
+        initialProgramId={session.program_id}
+      />
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="px-6 py-4 rounded-xl bg-surface shadow-lg text-center">
+            <div className="animate-spin mb-2 h-6 w-6 border-2 border-accent border-t-transparent rounded-full mx-auto" />
+            <p className="text-sm text-foreground-muted">Updating workout...</p>
+          </div>
+        </div>
+      )}
     </form>
   );
 };

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 import type { Tables, TablesInsert } from "../../types/database";
+import { revalidatePath } from "next/cache";
 
 async function createWorkoutExercises(session: Tables<"workout_sessions">) {
   const supabase = await createClient();
@@ -87,13 +88,18 @@ async function deleteWorkoutExercises(sessionId: string) {
   }
 }
 
-async function createSession(userId: string, dayId?: string | null) {
+async function createSession(
+  userId: string,
+  programId: string | null,
+  dayId: string | null
+) {
   const supabase = await createClient();
 
   const { data: session, error } = await supabase
     .from("workout_sessions")
     .insert({
       user_id: userId,
+      program_id: programId ?? null,
       program_day_id: dayId ?? null,
       status: "draft",
     })
@@ -111,12 +117,16 @@ async function createSession(userId: string, dayId?: string | null) {
   return session;
 }
 
-async function updateSession(sessionId: string, dayId: string | null) {
+async function updateSession(
+  sessionId: string,
+  programId: string | null,
+  dayId: string | null
+) {
   const supabase = await createClient();
 
   const { data: session, error } = await supabase
     .from("workout_sessions")
-    .update({ program_day_id: dayId ?? null })
+    .update({ program_id: programId ?? null, program_day_id: dayId ?? null })
     .eq("id", sessionId)
     .select("*")
     .single();
@@ -153,26 +163,60 @@ export async function deleteSession(sessionId: string) {
     .eq("status", "draft");
 }
 
-export async function saveWorkoutDraft(formData: FormData, existingSessionId?: string) {
+export async function clearSession(sessionId: string) {
   const supabase = await createClient();
 
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  await deleteWorkoutExercises(sessionId);
+
+  const { error } = await supabase
+    .from("workout_sessions")
+    .update({ program_day_id: null })
+    .eq("id", sessionId)
+    .eq("user_id", user.id)
+    .eq("status", "draft");
+
+  if (error) {
+    throw new Error(error.message || "Failed to clear workout session");
+  }
+
+  redirect(`/workout/${sessionId}`);
+}
+
+export async function saveWorkoutDraft({
+  programId,
+  dayId,
+  existingSessionId,
+}: {
+  programId: string | null,
+  dayId: string | null,
+  existingSessionId?: string
+}) {
+  const supabase = await createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
     throw new Error("User not authenticated");
   }
-  
-  const dayId = formData.get("dayId") as string || null;
+
   console.log("Received dayId:", dayId);
 
   let session;
   if (!existingSessionId) {
-    session = await createSession(user.id, dayId);
+    session = await createSession(user.id, programId, dayId);
   } else {
-    session = await updateSession(existingSessionId, dayId);
+    session = await updateSession(existingSessionId, programId, dayId);
   }
 
+  revalidatePath("/workout", "layout");
   redirect(`/workout/${session!.id}`);
 }

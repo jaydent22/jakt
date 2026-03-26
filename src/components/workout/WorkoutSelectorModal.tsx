@@ -1,25 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 import Modal from "../Modal";
 import type {
   ProgramDayWithExercises,
   ProgramWithDays,
 } from "../programs/ProgramList";
-import { saveWorkoutDraft } from "../../lib/actions/workout";
 
-const WorkoutStartModal = ({
+const WorkoutSelectorModal = ({
   isOpen,
   onClose,
+  onSelect,
+  initialStep = "entry",
+  initialProgramId,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onSelect: (selection: { programId: string; dayId: string }) => void;
+  initialStep?: "entry" | "selectProgram" | "selectDay";
+  initialProgramId?: string | null;
 }) => {
   const [loading, setLoading] = useState(false);
   const [programs, setPrograms] = useState<ProgramWithDays[]>([]);
+  const [selectedProgram, setSelectedProgram] =
+    useState<ProgramWithDays | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [step, setStep] = useState<"select" | "programs" | "days">("select");
+  const [step, setStep] = useState<"entry" | "selectProgram" | "selectDay">(initialStep);
   const [programDays, setProgramDays] = useState<ProgramDayWithExercises[]>([]);
 
   const supabase = createClient();
@@ -37,13 +44,51 @@ const WorkoutStartModal = ({
 
   useEffect(() => {
     if (!isOpen) {
-      setStep("select");
+      setStep("entry");
       setPrograms([]);
     }
-  }, [isOpen]);
+
+    if (initialStep === "selectProgram") {
+      getPrograms();
+    }
+
+    if (initialStep === "selectDay" && initialProgramId) {
+      getPrograms();
+      console.log(userId);
+      const program = programs.find((p) => p.id === initialProgramId);
+      if (program) {
+        setSelectedProgram(program);
+        getProgramDays(program.id);
+        setStep("selectDay");
+      }
+    }
+  }, [isOpen, initialStep, initialProgramId]);
+
+  // useEffect(() => {
+  //   if (!isOpen) return;
+  
+  //   if (initialStep === "selectProgram") {
+  //     getPrograms();
+  //   }
+  
+  //   if (initialStep === "selectDay") {
+  //     getPrograms();
+  //   }
+  // }, [isOpen, initialStep]);
+
+  // useEffect(() => {
+  //   if (!isOpen || !initialProgramId || programs.length === 0) return;
+
+  //   const program = programs.find((p) => p.id === initialProgramId);
+  //   if (program) {
+  //     setSelectedProgram(program);
+  //     getProgramDays(program.id);
+  //     setStep("selectDay");
+  //   }
+  // }, [isOpen, initialProgramId, programs]);
 
   const getPrograms = async () => {
-    setStep("programs");
+    setStep("selectProgram");
     setLoading(true);
 
     const { data } = await supabase
@@ -61,7 +106,7 @@ const WorkoutStartModal = ({
   };
 
   const getProgramDays = async (programId: string) => {
-    setStep("days");
+    setStep("selectDay");
     setLoading(true);
 
     const { data } = await supabase
@@ -84,7 +129,7 @@ const WorkoutStartModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} scrollable>
-      {step === "select" ? (
+      {step === "entry" ? (
         <div className="flex w-full h-full items-center justify-center">
           <div className="bg-surface p-6 w-full max-w-md text-center border-r border-border">
             <h2 className="text-2xl font-bold mb-2">From Program</h2>
@@ -110,12 +155,12 @@ const WorkoutStartModal = ({
             </button>
           </div>
         </div>
-      ) : step === "programs" ? (
+      ) : step === "selectProgram" ? (
         <div className="flex flex-col w-full">
           <div className="text-left mb-2">
             <button
-              role="button"
-              onClick={() => setStep("select")}
+              type="button"
+              onClick={() => setStep("entry")}
               className="p-1 text-foreground hover:underline"
             >
               ← Back
@@ -159,8 +204,11 @@ const WorkoutStartModal = ({
                         ))}
                       </div>
                       <button
-                        role="button"
-                        onClick={() => getProgramDays(program.id)}
+                        type="button"
+                        onClick={() => {
+                          setSelectedProgram(program);
+                          getProgramDays(program.id);
+                        }}
                         className="mt-2 inline-block px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover active:bg-accent-active"
                       >
                         Select Program
@@ -175,8 +223,11 @@ const WorkoutStartModal = ({
         <div>
           <div className="text-left mb-2">
             <button
-              role="button"
-              onClick={getPrograms}
+              type="button"
+              onClick={() => {
+                setSelectedProgram(null);
+                getPrograms();
+              }}
               className="p-1 text-foreground hover:underline"
             >
               ← Back
@@ -184,18 +235,24 @@ const WorkoutStartModal = ({
           </div>
 
           <h2 className="text-2xl font-bold pb-2 border-b border-border mb-4">
-            Program Days
+            {selectedProgram?.name}
           </h2>
           {loading ? (
             <p>Loading...</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {programDays.map((day) => (
-                <form action={saveWorkoutDraft} key={day.id}>
+                <Fragment key={day.id}>
                   <input type="hidden" name="dayId" value={day.id} />
                   <button
                     key={day.id}
-                    type="submit"
+                    type="button"
+                    onClick={() => {
+                      onSelect({
+                        programId: selectedProgram!.id,
+                        dayId: day.id,
+                      });
+                    }}
                     className="border border-border rounded-lg p-4 w-full max-w-sm bg-surface hover:bg-surface-hover active:bg-surface-active hover:shadow-lg hover:cursor-pointer transition-all duration-200 ease-in-out hover:-translate-y-1 text-left flex flex-col items-start gap-2 max-h-48 overflow-hidden"
                   >
                     <h3 className="text-xl font-semibold mb-2">
@@ -213,7 +270,7 @@ const WorkoutStartModal = ({
                       </div>
                     )}
                   </button>
-                </form>
+                </Fragment>
               ))}
             </div>
           )}
@@ -223,4 +280,4 @@ const WorkoutStartModal = ({
   );
 };
 
-export default WorkoutStartModal;
+export default WorkoutSelectorModal;
