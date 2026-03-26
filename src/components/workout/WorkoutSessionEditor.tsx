@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import { useForm, useFieldArray, set } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -63,8 +63,8 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     type: "insert" | "replace";
     exerciseIdx: number;
   } | null>(null);
-  const [expandedExerciseIdx, setExpandedExerciseIdx] = useState<number | null>(null);
-
+  const [expandedExerciseIdx, setExpandedExerciseIdx] = useState<number | null>(0);
+  
   const {
     fields: exerciseFields,
     insert: insertExercise,
@@ -117,6 +117,10 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     setIsSearchModalOpen(false);
     setExerciseAction(null);
   }
+
+  const handleExpand = useCallback((idx: number) => {
+    setExpandedExerciseIdx(idx)
+  }, []);
 
   function handleClearSession() {
     if (
@@ -203,9 +207,9 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                 exerciseIdx={exerciseIdx}
                 control={control}
                 register={register}
-                removeExercise={() => removeExercise(exerciseIdx)}
+                removeExercise={removeExercise}
                 // setExpandedExerciseIdx={(idx) => setExpandedExerciseIdx((current) => (current === idx ? null : idx))}
-                setExpandedExerciseIdx={(idx) => setExpandedExerciseIdx(idx)}
+                setExpandedExerciseIdx={handleExpand}
                 isExpanded={isExpanded}
               />
             </Fragment>
