@@ -48,14 +48,6 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     defaultValues: sessionToForm(session),
   });
 
-  // reset form values whenever the session prop changes (e.g. when loading a different session)
-  useEffect(() => {
-    if (session) {
-      reset(sessionToForm(session));
-      setLoading(false);
-    }
-  }, [session, reset]);
-
   const [loading, setLoading] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isDaySelectorOpen, setIsDaySelectorOpen] = useState(false);
@@ -63,8 +55,19 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
     type: "insert" | "replace";
     exerciseIdx: number;
   } | null>(null);
-  const [expandedExerciseIdx, setExpandedExerciseIdx] = useState<number | null>(0);
-  
+  const [expandedExerciseIdx, setExpandedExerciseIdx] = useState<number | null>(
+    0
+  );
+
+  // reset form values whenever the session prop changes (e.g. when loading a different session)
+  useEffect(() => {
+    if (session) {
+      reset(sessionToForm(session));
+      setExpandedExerciseIdx(0);
+      setLoading(false);
+    }
+  }, [session, reset]);
+
   const {
     fields: exerciseFields,
     insert: insertExercise,
@@ -116,21 +119,23 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
 
     setIsSearchModalOpen(false);
     setExerciseAction(null);
+    setExpandedExerciseIdx(exerciseAction.exerciseIdx);
   }
 
   const handleExpand = useCallback((idx: number) => {
-    setExpandedExerciseIdx(idx)
+    setExpandedExerciseIdx(idx);
   }, []);
 
   function handleClearSession() {
     if (
-      confirm(
+      !confirm(
         "Are you sure you want to clear the session? This cannot be undone."
       )
     ) {
-      setLoading(true);
-      clearSession(session.id);
+      return;
     }
+    setLoading(true);
+    clearSession(session.id);
   }
 
   async function handleSelectProgramDay({
@@ -208,7 +213,6 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
                 control={control}
                 register={register}
                 removeExercise={removeExercise}
-                // setExpandedExerciseIdx={(idx) => setExpandedExerciseIdx((current) => (current === idx ? null : idx))}
                 setExpandedExerciseIdx={handleExpand}
                 isExpanded={isExpanded}
               />
