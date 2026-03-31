@@ -161,6 +161,9 @@ export async function deleteSession(sessionId: string) {
     .eq("id", sessionId)
     .eq("user_id", user.id)
     .eq("status", "draft");
+
+  revalidatePath("/workout", "layout");
+  redirect("/workout");
 }
 
 export async function clearSession(sessionId: string) {

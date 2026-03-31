@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState, useCallback } from "react";
 import { useForm, useFieldArray, set } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { clearSession, saveWorkoutDraft } from "../../lib/actions/workout";
+import { clearSession, deleteSession, saveWorkoutDraft } from "../../lib/actions/workout";
 
 import { Tables } from "../../types/database";
 import { SessionForm, SessionFormSchema } from "../../types/schemas/workout";
@@ -183,9 +183,28 @@ const WorkoutSessionEditor = ({ session }: { session: Session }) => {
       className="flex flex-col items-center h-full min-h-screen"
     >
       <div className="w-full max-w-lg border-b border-border pb-2 mb-4">
-        <h1 className="text-center text-2xl font-bold text-foreground">
-          {session.name ?? `Workout Session - ${new Date().toDateString()}`}
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-center text-xl font-bold text-foreground">
+            {session.name ?? `Workout Session - ${new Date().toDateString()}`}
+          </h1>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              if (
+                !confirm(
+                  "Are you sure you want to delete this session? This action cannot be undone."
+                )
+              ) {
+                return;
+              }
+              deleteSession(session.id);
+            }}
+            className="px-2 py-1 text-sm rounded-md text-foreground-muted active:text-foreground active:bg-surface-active"
+          >
+            Delete Session
+          </button>
+        </div>
         <textarea
           {...register("notes")}
           placeholder="Session notes..."
