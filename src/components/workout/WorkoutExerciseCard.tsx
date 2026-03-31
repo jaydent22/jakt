@@ -71,19 +71,22 @@ const WorkoutExerciseCard = ({
         {exercise.sets && (
           <div className="mt-2 text-left">
             {/* Header */}
-            <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-2 mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+            {/* <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-2 mb-2 text-xs uppercase tracking-wide text-muted-foreground"> */}
+            <div className="grid grid-cols-8 gap-2 mb-2 text-center text-xs uppercase tracking-wide text-muted-foreground">
               <span>Set</span>
-              <span className="text-center">Reps</span>
-              <span className="text-center">Kg</span>
-              <span /> {/* for trash column */}
+              <span className="text-center col-span-3">Reps</span>
+              <span className="text-center col-span-3">Kg</span>
+              {/* <span /> for X column */}
             </div>
 
             {sets.map((set, setIdx) => (
               <div
                 key={set.id}
-                className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-2 mt-1 text-foreground"
+                // className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-2 mt-1 text-foreground"
+                className="grid grid-cols-8 text-center items-center gap-2 mt-1 text-foreground"
               >
-                <p className="w-6 text-center tabular-nums text-sm text-muted-foreground border border-border rounded-full">
+                {/* <p className="w-6 text-center tabular-nums text-sm text-muted-foreground border border-border rounded-full"> */}
+                <p className="text-center tabular-nums text-sm text-muted-foreground border border-border rounded-full">
                   {setIdx + 1}
                 </p>
 
@@ -93,7 +96,8 @@ const WorkoutExerciseCard = ({
                     `exercises.${exerciseIdx}.sets.${setIdx}.targetReps`,
                     { valueAsNumber: true }
                   )}
-                  className="w-full px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
+                  // className="w-full px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
+                  className="col-span-3 px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
                 />
 
                 <input
@@ -102,13 +106,14 @@ const WorkoutExerciseCard = ({
                     `exercises.${exerciseIdx}.sets.${setIdx}.targetWeightKg`,
                     { valueAsNumber: true }
                   )}
-                  className="w-full px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
+                  // className="w-full px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
+                  className="col-span-3 px-2 py-1 border rounded text-center focus:outline-none focus:border-accent"
                 />
                 <button
                   type="button"
                   onClick={() => removeSet(setIdx)}
                   // className="ml-auto px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 active:bg-red-700"
-                  className="text-foreground-muted hover:text-foreground active:text-foreground rounded-md text-xl"
+                  className="text-right text-foreground-muted hover:text-foreground active:text-foreground rounded-md text-xl"
                 >
                   &times;
                 </button>
