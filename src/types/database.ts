@@ -295,18 +295,21 @@ export type Database = {
           exercise_id: string | null
           id: string
           sort_order: number | null
+          status: Database["public"]["Enums"]["workout_exercise_status"]
           workout_session_id: string | null
         }
         Insert: {
           exercise_id?: string | null
           id?: string
           sort_order?: number | null
+          status?: Database["public"]["Enums"]["workout_exercise_status"]
           workout_session_id?: string | null
         }
         Update: {
           exercise_id?: string | null
           id?: string
           sort_order?: number | null
+          status?: Database["public"]["Enums"]["workout_exercise_status"]
           workout_session_id?: string | null
         }
         Relationships: [
@@ -482,6 +485,7 @@ export type Database = {
     }
     Enums: {
       day_type: "exercise" | "rest"
+      workout_exercise_status: "pending" | "active" | "completed" | "skipped"
       workout_session_status: "draft" | "active" | "completed"
     }
     CompositeTypes: {
@@ -611,6 +615,7 @@ export const Constants = {
   public: {
     Enums: {
       day_type: ["exercise", "rest"],
+      workout_exercise_status: ["pending", "active", "completed", "skipped"],
       workout_session_status: ["draft", "active", "completed"],
     },
   },

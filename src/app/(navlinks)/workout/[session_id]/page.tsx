@@ -1,11 +1,7 @@
 import { createClient } from "../../../../lib/supabase/server";
-import WorkoutSessionEditor, {
-  type Session,
-} from "@/src/components/workout/WorkoutSessionEditor";
+import WorkoutSessionView from "../../../../components/workout/WorkoutSessionView";
 
-export default async function WorkoutSessionPage({
-  params,
-}: {
+export default async function WorkoutSessionPage({ params }: {
   params: { session_id: string };
 }) {
   const slug = await params;
@@ -53,7 +49,5 @@ export default async function WorkoutSessionPage({
   //   .single()
   //   .then((res) => res.data?.name);
 
-  if (session.status === "draft") {
-    return <WorkoutSessionEditor session={session} />;
-  }
+  return <WorkoutSessionView initialSession={session} />;
 }

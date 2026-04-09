@@ -12,15 +12,7 @@ import { ExerciseSearchResult } from "../exercises/ExerciseSearch/ExerciseSearch
 import ExerciseSearchModal from "../exercises/ExerciseSearch/ExerciseSearchModal";
 import WorkoutExerciseCard from "./WorkoutExerciseCard";
 import WorkoutSelectorModal from "./WorkoutSelectorModal";
-
-export type Session = Tables<"workout_sessions"> & {
-  workout_exercises: (Tables<"workout_exercises"> & {
-    exercises: Tables<"exercises">;
-    workout_sets: Tables<"workout_sets">[];
-  })[];
-} & {
-  name?: string;
-};
+import type { Session } from "./WorkoutSessionView";
 
 function sessionToForm(session: Session): SessionForm {
   return {
